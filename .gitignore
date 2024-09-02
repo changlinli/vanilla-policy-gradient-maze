@@ -64,6 +64,7 @@ celerybeat-schedule
 .env
 .venv
 env/
+maze_env/
 venv/
 ENV/
 env.bak/
@@ -95,3 +96,6 @@ cython_debug/
 
 # VS Code
 .vscode/
+
+# DS Store
+.DS_Store
