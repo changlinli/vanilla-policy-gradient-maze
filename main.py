@@ -242,12 +242,17 @@ calculate_loss_from_total_rewards(example_total_rewards)
 
 from torch.optim import SGD
 
-MAX_TRAINING_ITERATIONS = 5000
+MAX_TRAINING_ITERATIONS = 1000
 
 new_network = PolicyNetwork()
 
-# %%
+# %% 
 
+# state to previously calculated total reward 
+# if doesn't exist in dictionary, use 0
+
+# %%
+baseline = {}
 def train(policy_network: PolicyNetwork):
     training_iteration = 0
     optimizer = SGD(policy_network.parameters(), lr=0.01, momentum=0.9)
@@ -256,7 +261,13 @@ def train(policy_network: PolicyNetwork):
         optimizer.zero_grad()
         trajectory = generate_trajectory(policy_network)
         total_rewards = calculate_total_rewards(trajectory)
-        loss = calculate_loss_from_total_rewards(total_rewards) * -1
+        advantage = list(range(len(total_rewards)))
+        for i in range(len(total_rewards)):
+            advantage[i] = (total_rewards[i][0], total_rewards[i][1], total_rewards[i][2] - baseline.get(total_rewards[i][0],0))
+            baseline[total_rewards[i][0]] = 0.9*baseline.get(total_rewards[i][0],0) + total_rewards[i][2]*0.1
+        # total_rewards: state, action_prob, future_rewards
+        # total
+        loss = calculate_loss_from_total_rewards(advantage) * -1
         loss.backward()
         optimizer.step()
         training_iteration += 1
@@ -264,5 +275,7 @@ def train(policy_network: PolicyNetwork):
 train(new_network)
 
 # %%
+print(baseline)
 
 generate_trajectory(new_network)
+# %%
